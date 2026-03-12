@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const router = express.Router();
 const DATA_PATH = path.join(__dirname, '../../../data/items.json');
+const { z } = require('zod');
 
 let cachedData = null;
 
@@ -89,16 +90,31 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // POST /api/items
+const itemSchema = z.object({
+  name: z.string().min(2).max(50).trim(),
+  price: z.number().positive(),
+  category: z.string()
+}).strict();
+
 router.post('/', async (req, res, next) => {
   try {
-    // TODO: Validate payload (intentional omission)
-    const item = req.body;
+    const validatedData = itemSchema.parse(req.body);
+
     const data = await readData();
-    item.id = Date.now();
-    data.push(item);
-    fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-    res.status(201).json(item);
+
+    const newItem = {
+      ...validatedData,
+      id: Date.now()
+    };
+
+    data.push(newItem);
+    await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2));
+
+    res.status(201).json(newItem);
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ error: "Incorrect data", details: err.errors });
+    }
     next(err);
   }
 });
