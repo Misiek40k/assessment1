@@ -20,7 +20,7 @@ function Items() {
       if (items.length) return;
 
       try {
-        const { data } = await fetchItems(page);
+        const { data } = await fetchItems();
 
         if (active) {
           setItems(data);
