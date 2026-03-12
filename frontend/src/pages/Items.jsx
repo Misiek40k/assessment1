@@ -4,14 +4,14 @@ import { Link } from 'react-router-dom';
 import { Virtuoso } from 'react-virtuoso'
 
 function Items() {
-  const { items, fetchItems, setItems, loading, page, isLastPage } = useData();
+  const { items, fetchItems, setItems, isLoading, page, isLastPage } = useData();
 
   const loadMore = useCallback(async () => {
-    if (!loading && !isLastPage) {
+    if (!isLoading && !isLastPage) {
       const { data } = await fetchItems(page + 1);
       setItems(prevItems => [...prevItems, ...data]);
     }
-  }, [fetchItems, loading, page, isLastPage, setItems]);
+  }, [fetchItems, isLoading, page, isLastPage, setItems]);
 
   useEffect(() => {
     let active = true;
@@ -56,7 +56,7 @@ function Items() {
       )}
       components={{
         Footer: () => (
-          loading ? <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div> : null
+          isLoading ? <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div> : null
         )
       }}
     />
