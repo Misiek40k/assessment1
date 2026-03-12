@@ -7,7 +7,7 @@ function Items() {
   const { items, fetchItems, setItems, loading, page, isLastPage } = useData();
 
   const loadMore = useCallback(async () => {
-    if (!loading || !isLastPage) {
+    if (!loading && !isLastPage) {
       const { data } = await fetchItems(page + 1);
       setItems(prevItems => [...prevItems, ...data]);
     }
@@ -17,6 +17,8 @@ function Items() {
     let active = true;
 
     const fetchData = async () => {
+      if (items.length) return;
+
       try {
         const { data } = await fetchItems(page);
 
