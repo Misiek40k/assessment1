@@ -1,6 +1,16 @@
-// Utility intentionally unused by routes (candidate should refactor)
-function mean(arr) {
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
+const calculateAveragePrice = (items) => {
+  let totalPrice = 0;
 
-module.exports = { mean };
+  // for loop is most performant, much faster than reduce for large arrays, and slightly faster than forOf. I intentionally used good old for loop here and leaved commented alternative for demonstration purposes.
+  for (let i = 0; i < items.length; i++) {
+    totalPrice += items[i].price;
+  }
+
+  // for (const item of items) {
+  //   totalPrice += item.price;
+  // }
+
+  return totalPrice / items.length;
+};
+
+module.exports = { calculateAveragePrice };

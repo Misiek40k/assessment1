@@ -1,32 +1,63 @@
-import React, { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useData } from '../state/DataContext';
 import { Link } from 'react-router-dom';
+import { Virtuoso } from 'react-virtuoso'
 
 function Items() {
-  const { items, fetchItems } = useData();
+  const { items, fetchItems, setItems, loading, page, isLastPage } = useData();
+
+  const loadMore = useCallback(async () => {
+    if (!loading || !isLastPage) {
+      const { data } = await fetchItems(page + 1);
+      setItems(prevItems => [...prevItems, ...data]);
+    }
+  }, [fetchItems, loading, page, isLastPage, setItems]);
 
   useEffect(() => {
     let active = true;
 
-    // Intentional bug: setState called after component unmount if request is slow
-    fetchItems().catch(console.error);
+    const fetchData = async () => {
+      try {
+        const { data } = await fetchItems(page);
 
-    // Clean‑up to avoid memory leak (candidate should implement)
+        if (active) {
+          setItems(data);
+        }
+      } catch (error) {
+        if (active) {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchData();
+
     return () => {
       active = false;
     };
-  }, [fetchItems]);
+  }, [fetchItems, setItems]);
 
   if (!items.length) return <p>Loading...</p>;
 
   return (
-    <ul>
-      {items.map(item => (
-        <li key={item.id}>
-          <Link to={'/items/' + item.id}>{item.name}</Link>
-        </li>
-      ))}
-    </ul>
+    <Virtuoso
+      style={{ height: '500px' }}
+      data={items}
+      endReached={loadMore}
+      increaseViewportBy={200}
+      itemContent={(index, item) => (
+        <div style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+          <Link to={'/items/' + item.id}>
+            {index + 1}. {item.name}
+          </Link>
+        </div>
+      )}
+      components={{
+        Footer: () => (
+          loading ? <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div> : null
+        )
+      }}
+    />
   );
 }
 
