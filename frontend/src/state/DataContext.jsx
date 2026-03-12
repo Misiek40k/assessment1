@@ -17,7 +17,7 @@ export function DataProvider({ children }) {
 
       setPage(targetPage);
 
-      if (data.metadata.isLast) {
+      if (data.metadata?.isLast) {
         setIsLastPage(true);
       } 
 
